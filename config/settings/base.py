@@ -87,6 +87,8 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "task_manager.users",
     # Your stuff: custom apps go here
+    "task_manager.tasks",
+    "django_filters",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -104,11 +106,12 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = "auth.User"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "users:redirect"
+LOGIN_REDIRECT_URL = "/tasks" #"users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = "account_login"
+LOGIN_URL = "/user/login" #"account_login"
+LOGOUT_REDIRECT_URL = "/user/login"
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -234,7 +237,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""Kunal Kumar Jha""", "kunal-kumar-jha@example.com")]
+ADMINS = [("""Aravind Kannan Rathinasabapathi""", "aravind-kannan-rathinasabapathi@example.com")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
@@ -268,7 +271,7 @@ if USE_TZ:
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-timezone
     CELERY_TIMEZONE = TIME_ZONE
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
-CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379")
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_backend
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-accept_content
@@ -327,7 +330,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SERVERS": [
         {"url": "http://127.0.0.1:8000", "description": "Local Development server"},
-        {"url": "https://kunatastic.me", "description": "Production server"},
+        {"url": "https://example.com", "description": "Production server"},
     ],
 }
 # Your stuff...

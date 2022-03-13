@@ -7,32 +7,65 @@ from django.views.generic import TemplateView
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 
-urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
-    # Django Admin, use {% url 'admin:index' %}
-    path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    path("users/", include("task_manager.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-# API URLS
-urlpatterns += [
-    # API base url
-    path("api/", include("config.api_router")),
-    # DRF auth token
-    path("auth-token/", obtain_auth_token),
-    path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
-    path(
-        "api/docs/",
-        SpectacularSwaggerView.as_view(url_name="api-schema"),
-        name="api-docs",
-    ),
-]
+"""task_manager URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/3.2/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+from rest_framework.routers import SimpleRouter
+from task_manager.tasks.apiview import TaskViewSet, HistoryViewSet
+from task_manager.tasks.views import *
+from rest_framework_nested import routers
+
+
+router = SimpleRouter()
+
+router.register("api/task", TaskViewSet)
+# router.register("api/history", HistoryViewSet)
+
+task_router = routers.NestedSimpleRouter(router, "api/task", lookup="task")
+task_router.register("history", HistoryViewSet)
+
+urlpatterns = [
+
+    # ADMIN
+    path("admin/", admin.site.urls),
+    # path("historyapi/", HistoryListApi.as_view()),
+    # path("taskapi/", TaskListApi.as_view()),
+
+    # AUTH
+    path("user/signup/", UserCreateView.as_view()),
+    path("user/login/", UserLoginView.as_view()),
+    path("user/logout/", LogoutView.as_view()),
+
+    # TASKS
+    path("tasks/", PendingTaskView.as_view()),
+    path("add-task/", AddTaskView.as_view()),
+    path("update-task/<pk>/", UpdateTaskView.as_view()),
+    path("delete-task/<pk>/", DeleteTaskView.as_view()),
+    path("completed-tasks/", CompletedTaskView.as_view()),
+    path("all-tasks/", AllTaskView.as_view()),
+
+    # REMINDER
+    path("reminder/<pk>/", EmailReminderView.as_view()),
+
+    path("", PendingTaskView.as_view()),
+
+] + router.urls + task_router.urls
+
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
